@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高雄房屋推薦系統</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-home me-2"></i>
+                高雄房屋推薦系統
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#search-section">房屋搜尋</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#map-section">地圖檢視</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#recommendations-section">推薦結果</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <div class="container my-4">
+        
+        <!-- 搜尻條件區 -->
+        <section id="search-section" class="mb-5">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h4 class="mb-0">
+                                <i class="fas fa-search me-2"></i>
+                                設定搜尋條件
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="searchForm">
+                                <div class="row g-3">
+                                    <!-- 地點選擇 -->
+                                    <div class="col-md-6">
+                                        <label for="district" class="form-label">選擇區域</label>
+                                        <select class="form-select" id="district" required>
+                                            <option value="">請選擇區域</option>
+                                            <option value="三民區">三民區</option>
+                                            <option value="鳳山區">鳳山區</option>
+                                            <option value="前鎮區">前鎮區</option>
+                                            <option value="新興區">新興區</option>
+                                            <option value="楠梓區">楠梓區</option>
+                                            <option value="左營區">左營區</option>
+                                            <option value="苓雅區">苓雅區</option>
+                                            <option value="鼓山區">鼓山區</option>
+                                            <option value="小港區">小港區</option>
+                                            <option value="大寮區">大寮區</option>
+                                            <option value="仁武區">仁武區</option>
+                                            <option value="大社區">大社區</option>
+                                            <option value="岡山區">岡山區</option>
+                                            <option value="路竹區">路竹區</option>
+                                            <option value="橋頭區">橋頭區</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 搜尋範圍 -->
+                                    <div class="col-md-6">
+                                        <label for="searchRadius" class="form-label">搜尋範圍 (公里)</label>
+                                        <select class="form-select" id="searchRadius">
+                                            <option value="1">1 公里內</option>
+                                            <option value="2" selected>2 公里內</option>
+                                            <option value="3">3 公里內</option>
+                                            <option value="5">5 公里內</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 租金範圍 -->
+                                    <div class="col-md-6">
+                                        <label for="minRent" class="form-label">最低租金</label>
+                                        <input type="number" class="form-control" id="minRent" placeholder="例: 5000" min="0" step="1000">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="maxRent" class="form-label">最高租金</label>
+                                        <input type="number" class="form-control" id="maxRent" placeholder="例: 20000" min="0" step="1000">
+                                    </div>
+
+                                    <!-- 房型需求 -->
+                                    <div class="col-md-4">
+                                        <label for="rooms" class="form-label">房間數</label>
+                                        <select class="form-select" id="rooms">
+                                            <option value="">不限</option>
+                                            <option value="1">1 房</option>
+                                            <option value="2">2 房</option>
+                                            <option value="3">3 房</option>
+                                            <option value="4">4 房以上</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="halls" class="form-label">客廳數</label>
+                                        <select class="form-select" id="halls">
+                                            <option value="">不限</option>
+                                            <option value="1">1 廳</option>
+                                            <option value="2">2 廳</option>
+                                            <option value="3">3 廳以上</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="bathrooms" class="form-label">衛浴數</label>
+                                        <select class="form-select" id="bathrooms">
+                                            <option value="">不限</option>
+                                            <option value="1">1 衛</option>
+                                            <option value="2">2 衛</option>
+                                            <option value="3">3 衛以上</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 建物類型 -->
+                                    <div class="col-md-6">
+                                        <label for="buildingType" class="form-label">建物類型</label>
+                                        <select class="form-select" id="buildingType">
+                                            <option value="">不限</option>
+                                            <option value="住宅大樓（十一層(含)以上有電梯）">住宅大樓</option>
+                                            <option value="華廈（十層以下(含)有電梯）">華廈</option>
+                                            <option value="透天厝">透天厝</option>
+                                            <option value="公寓(五樓含以下無電梯)">公寓</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 坪數範圍 -->
+                                    <div class="col-md-6">
+                                        <label for="area" class="form-label">坪數需求</label>
+                                        <select class="form-select" id="area">
+                                            <option value="">不限</option>
+                                            <option value="0-15">15坪以下</option>
+                                            <option value="15-25">15-25坪</option>
+                                            <option value="25-35">25-35坪</option>
+                                            <option value="35-50">35-50坪</option>
+                                            <option value="50-999">50坪以上</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- 搜尋按鈕 -->
+                                    <div class="col-12">
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                            <button type="button" class="btn btn-outline-secondary me-md-2" onclick="resetForm()">
+                                                <i class="fas fa-undo me-1"></i>重設條件
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-search me-1"></i>開始搜尋
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 載入中提示 -->
+        <div id="loadingSpinner" class="text-center my-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">搜尋中...</span>
+            </div>
+            <p class="mt-2">正在為您搜尋合適的房屋...</p>
+        </div>
+
+        <!-- 搜尋結果統計 -->
+        <div id="searchStats" class="alert alert-info" style="display: none;">
+            <i class="fas fa-info-circle me-2"></i>
+            <span id="statsText"></span>
+        </div>
+
+        <!-- 推薦結果區 -->
+        <section id="recommendations-section" style="display: none;">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-heart me-2 text-danger"></i>
+                                推薦房屋清單
+                            </h4>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortResults('rent')">
+                                    <i class="fas fa-sort-amount-down me-1"></i>依租金排序
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="sortResults('distance')">
+                                    <i class="fas fa-map-marker-alt me-1"></i>依距離排序
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="exportResults()">
+                                    <i class="fas fa-download me-1"></i>匯出結果
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="recommendationsList" class="list-group list-group-flush">
+                                <!-- 動態生成推薦結果 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 地圖顯示區 -->
+        <section id="map-section" class="mt-5" style="display: none;">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="fas fa-map me-2"></i>
+                                地圖檢視
+                            </h4>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="toggleMapLayer('all')">
+                                    顯示全部
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="toggleMapLayer('recommended')">
+                                    僅推薦
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="fitMapBounds()">
+                                    <i class="fas fa-expand-arrows-alt me-1"></i>調整範圍
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="map" style="height: 500px; width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>高雄房屋推薦系統</h5>
+                    <p class="mb-0">智慧化房屋搜尋與推薦平台</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <i class="fas fa-database me-2"></i>
+                        資料來源：高雄市政府開放資料
+                    </p>
+                    <small class="text-muted">最後更新：2024年12月</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="housing-data.js"></script>
+    <script src="recommendation-engine.js"></script>
+    <script src="map-utils.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
