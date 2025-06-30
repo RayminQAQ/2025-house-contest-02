@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地圖顯示測試</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-map {
+            height: 400px;
+            width: 100%;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .alert-info {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .btn-test {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">🗺️ 地圖顯示測試頁面</h2>
+        
+        <div class="alert alert-info">
+            <h5>📋 測試步驟：</h5>
+            <ol>
+                <li>檢查下方地圖是否完整顯示</li>
+                <li>測試地圖縮放和拖拽功能</li>
+                <li>點擊按鈕測試地圖重新整理功能</li>
+                <li>確認地圖圖層可以正常切換</li>
+            </ol>
+        </div>
+        
+        <div class="text-center mb-3">
+            <button class="btn btn-primary btn-test" onclick="refreshTestMap()">重新整理地圖</button>
+            <button class="btn btn-success btn-test" onclick="addTestMarkers()">添加測試標記</button>
+            <button class="btn btn-warning btn-test" onclick="fitTestBounds()">調整地圖範圍</button>
+            <a href="index.html" class="btn btn-info btn-test">返回主系統</a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>測試地圖 - 高雄市區域</h5>
+            </div>
+            <div class="card-body p-0">
+                <div id="testMap" class="test-map"></div>
+            </div>
+        </div>
+        
+        <div class="alert alert-success mt-3">
+            <h6>✅ 預期結果：</h6>
+            <ul class="mb-0">
+                <li>地圖應該完整顯示，沒有空白或重疊區域</li>
+                <li>地圖圖層應該完整載入</li>
+                <li>縮放和拖拽功能正常</li>
+                <li>標記點擊後顯示彈出資訊</li>
+            </ul>
+        </div>
+        
+        <div class="mt-4">
+            <h5>🛠️ 如果地圖仍然有問題：</h5>
+            <div class="alert alert-warning">
+                <ul class="mb-0">
+                    <li><strong>重新載入頁面</strong>：按 F5 或 Ctrl+R</li>
+                    <li><strong>清除瀏覽器快取</strong>：按 Ctrl+Shift+R</li>
+                    <li><strong>檢查網路連線</strong>：確保可以正常存取網際網路</li>
+                    <li><strong>檢查瀏覽器控制台</strong>：按 F12 查看是否有錯誤訊息</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let testMap = null;
+        let testMarkers = [];
+
+        // 初始化測試地圖
+        function initTestMap() {
+            try {
+                testMap = L.map('testMap', {
+                    center: [22.6273, 120.3014],
+                    zoom: 12
+                });
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(testMap);
+
+                // 強制重新計算地圖大小
+                setTimeout(() => {
+                    testMap.invalidateSize();
+                }, 100);
+
+                console.log('測試地圖初始化完成');
+                
+                // 添加一些測試標記
+                addTestMarkers();
+                
+            } catch (error) {
+                console.error('測試地圖初始化失敗:', error);
+                alert('測試地圖初始化失敗，請檢查網路連線');
+            }
+        }
+
+        // 重新整理測試地圖
+        function refreshTestMap() {
+            if (testMap) {
+                testMap.invalidateSize();
+                setTimeout(() => {
+                    testMap.invalidateSize();
+                }, 100);
+                console.log('測試地圖已重新整理');
+            }
+        }
+
+        // 添加測試標記
+        function addTestMarkers() {
+            if (!testMap) return;
+            
+            // 清除現有標記
+            testMarkers.forEach(marker => testMap.removeLayer(marker));
+            testMarkers = [];
+            
+            // 高雄市主要區域的測試標記
+            const testPoints = [
+                { lat: 22.6273, lng: 120.3014, name: '高雄市中心', color: 'red' },
+                { lat: 22.6469, lng: 120.3110, name: '三民區', color: 'blue' },
+                { lat: 22.6264, lng: 120.3671, name: '鳳山區', color: 'green' },
+                { lat: 22.5957, lng: 120.3204, name: '前鎮區', color: 'orange' },
+                { lat: 22.6793, lng: 120.2968, name: '左營區', color: 'purple' }
+            ];
+            
+            testPoints.forEach(point => {
+                const marker = L.marker([point.lat, point.lng])
+                    .bindPopup(`<strong>${point.name}</strong><br>緯度: ${point.lat}<br>經度: ${point.lng}`)
+                    .addTo(testMap);
+                
+                testMarkers.push(marker);
+            });
+            
+            console.log(`已添加 ${testPoints.length} 個測試標記`);
+        }
+
+        // 調整測試地圖範圍
+        function fitTestBounds() {
+            if (testMap && testMarkers.length > 0) {
+                const group = new L.featureGroup(testMarkers);
+                testMap.fitBounds(group.getBounds(), { padding: [20, 20] });
+                
+                setTimeout(() => {
+                    testMap.invalidateSize();
+                }, 100);
+            }
+        }
+
+        // 頁面載入完成後初始化測試地圖
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initTestMap, 200);
+        });
+
+        // 監聽視窗大小變化
+        window.addEventListener('resize', () => {
+            if (testMap) {
+                setTimeout(() => {
+                    testMap.invalidateSize();
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>

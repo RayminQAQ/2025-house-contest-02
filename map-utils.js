@@ -49,7 +49,8 @@ class MapUtils {
                 center: [22.6273, 120.3014], // 高雄市中心
                 zoom: 11,
                 zoomControl: true,
-                attributionControl: true
+                attributionControl: true,
+                preferCanvas: false
             });
 
             // 添加基礎圖層
@@ -86,6 +87,17 @@ class MapUtils {
 
             // 添加自定義樣式
             this.addCustomMapStyles();
+
+            // 重要：強制重新計算地圖大小
+            setTimeout(() => {
+                this.map.invalidateSize();
+            }, 100);
+
+            // 監聽地圖載入完成事件
+            this.map.whenReady(() => {
+                console.log('地圖載入完成');
+                this.map.invalidateSize();
+            });
 
             console.log('地圖初始化完成');
             return this.map;
@@ -388,8 +400,22 @@ class MapUtils {
 
     // 重設地圖範圍
     resetMapBounds() {
-        if (this.currentBounds) {
+        if (this.currentBounds && this.map) {
             this.map.fitBounds(this.currentBounds, { padding: [20, 20] });
+            // 同時重新計算地圖大小
+            setTimeout(() => {
+                this.map.invalidateSize();
+            }, 100);
+        }
+    }
+
+    // 強制重新整理地圖顯示
+    refreshMap() {
+        if (this.map) {
+            this.map.invalidateSize();
+            setTimeout(() => {
+                this.map.invalidateSize();
+            }, 100);
         }
     }
 

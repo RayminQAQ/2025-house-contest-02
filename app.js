@@ -97,6 +97,36 @@ class HouseRecommendationApp {
 
         // 回到頂部按鈕（如果需要）
         this.setupScrollToTop();
+
+        // 監聽視窗大小變化，重新調整地圖
+        window.addEventListener('resize', () => {
+            if (mapUtils.map) {
+                setTimeout(() => {
+                    mapUtils.map.invalidateSize();
+                }, 100);
+            }
+        });
+
+        // 監聽地圖區域的顯示狀態變化
+        if (this.mapSection) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const target = mutation.target;
+                        if (target.style.display !== 'none' && mapUtils.map) {
+                            setTimeout(() => {
+                                mapUtils.map.invalidateSize();
+                            }, 200);
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(this.mapSection, {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+        }
     }
 
     // 等待資料載入
@@ -116,8 +146,18 @@ class HouseRecommendationApp {
     // 初始化地圖
     initializeMap() {
         try {
-            mapUtils.initMap('map');
-            console.log('地圖初始化完成');
+            // 延遲初始化地圖，確保 DOM 元素已經準備好
+            setTimeout(() => {
+                mapUtils.initMap('map');
+                console.log('地圖初始化完成');
+                
+                // 再次確保地圖大小正確
+                setTimeout(() => {
+                    if (mapUtils.map) {
+                        mapUtils.map.invalidateSize();
+                    }
+                }, 500);
+            }, 100);
         } catch (error) {
             console.error('地圖初始化失敗:', error);
         }
@@ -343,6 +383,14 @@ class HouseRecommendationApp {
         }
         if (this.mapSection) {
             this.mapSection.style.display = 'block';
+            
+            // 重要：顯示地圖區域後，重新計算地圖大小
+            setTimeout(() => {
+                if (mapUtils.map) {
+                    mapUtils.map.invalidateSize();
+                    console.log('地圖大小已重新計算');
+                }
+            }, 200);
         }
         
         // 滾動到結果區域
@@ -644,6 +692,10 @@ function toggleMapLayer(layer) {
 
 function fitMapBounds() {
     mapUtils.resetMapBounds();
+    // 額外的地圖重新整理
+    setTimeout(() => {
+        mapUtils.refreshMap();
+    }, 100);
 }
 
 // 創建全域應用程式實例
